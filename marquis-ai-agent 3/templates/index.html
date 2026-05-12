@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Transformation Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f6f4f0;
+      --surface: #ffffff;
+      --surface2: #f0ede8;
+      --border: #e0ddd6;
+      --border-strong: #c4c0b6;
+      --text-1: #141210;
+      --text-2: #4a4640;
+      --text-3: #968f84;
+      --teal: #0c6350; --teal-bg: #ddf2eb; --teal-mid: #1a9470;
+      --amber: #7a4608; --amber-bg: #faebd8;
+      --coral: #8f3419; --coral-bg: #fae8e1;
+      --blue: #14528f; --blue-bg: #e2eef9;
+      --red: #8f2626; --red-bg: #fbe8e8;
+      --green: #335f0e; --green-bg: #e8f2da;
+      --purple: #4a41a8; --purple-bg: #eceafe;
+      --serif: 'DM Serif Display', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+      --mono: 'DM Mono', 'Courier New', monospace;
+    }
+
+    body { font-family: var(--sans); font-weight: 400; background: var(--bg); color: var(--text-1); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    .page { max-width: 840px; margin: 0 auto; padding: 3.5rem 2rem 8rem; }
+
+    /* MASTHEAD */
+    .masthead { margin-bottom: 2.75rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+    .masthead-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); margin-bottom: 0.75rem; }
+    .masthead h1 { font-family: var(--serif); font-size: 38px; font-weight: normal; color: var(--text-1); margin-bottom: 0.5rem; line-height: 1.15; }
+    .masthead p { font-family: var(--sans); font-size: 15px; color: var(--text-2); font-weight: 300; letter-spacing: 0.01em; }
+
+    /* PDF BUTTON */
+    .pdf-btn { display: none; align-items: center; gap: 8px; padding: 9px 16px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--border-strong); border-radius: 4px; background: var(--surface); color: var(--text-2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .pdf-btn:hover { border-color: var(--text-1); color: var(--text-1); background: var(--surface2); }
+    .pdf-btn svg { flex-shrink: 0; }
+    .pdf-btn-top { margin-bottom: 1.5rem; }
+
+    /* SEARCH */
+    .search-wrap { position: relative; margin-bottom: 1rem; }
+    .search-input { width: 100%; padding: 14px 18px; font-size: 16px; font-family: var(--serif); font-style: italic; border: 1.5px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text-1); outline: none; transition: border-color 0.15s; }
+    .search-input:focus { border-color: var(--text-1); }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-btn { margin-top: 0.75rem; width: 100%; padding: 13px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid var(--text-1); border-radius: 6px; background: var(--text-1); color: #fff; cursor: pointer; transition: opacity 0.15s; }
+    .search-btn:hover { opacity: 0.82; }
+    .search-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* DEPTH */
+    .depth-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+    .depth-opt { padding: 9px 12px; font-size: 12px; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--text-2); cursor: pointer; text-align: center; transition: all 0.15s; }
+    .depth-opt:hover { border-color: var(--border-strong); }
+    .depth-opt.active { border-color: var(--text-1); background: var(--text-1); color: #fff; }
+
+    /* STATUS */
+    .status { display: none; align-items: center; gap: 10px; font-size: 13px; font-family: var(--sans); font-weight: 300; color: var(--text-2); font-style: italic; margin-bottom: 1.5rem; }
+    .spinner { width: 14px; height: 14px; border: 1.5px solid var(--border); border-top-color: var(--text-2); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box { display: none; font-size: 13px; color: var(--coral); background: var(--coral-bg); border-radius: 5px; padding: 10px 14px; margin-bottom: 1.5rem; font-family: var(--mono); }
+
+    /* COMPANY CARD */
+    .company-card { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .company-card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+    .company-initials { width: 52px; height: 52px; border-radius: 8px; background: var(--purple-bg); color: var(--purple); font-family: var(--mono); font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: 0.06em; }
+    .company-name { font-family: var(--serif); font-size: 22px; font-weight: normal; color: var(--text-1); margin-bottom: 3px; }
+    .company-meta { font-size: 13px; font-weight: 300; color: var(--text-2); }
+    .company-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.875rem; }
+    .badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+    .badge-sector { background: var(--purple-bg); color: var(--purple); }
+    .badge-size { background: var(--blue-bg); color: var(--blue); }
+    .badge-revenue { background: var(--green-bg); color: var(--green); }
+    .company-desc { font-size: 14px; font-weight: 300; color: var(--text-2); line-height: 1.7; margin-bottom: 1rem; }
+    .signal-list { display: flex; flex-direction: column; gap: 6px; }
+    .signal-item { font-size: 13px; font-weight: 300; color: var(--text-2); padding-left: 1.1rem; position: relative; line-height: 1.5; }
+    .signal-item::before { content: '→'; position: absolute; left: 0; color: var(--teal); font-style: normal; }
+    .confidence-bar-wrap { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .confidence-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .bar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+    /* ANALYZE BTN */
+    .analyze-btn { display: none; width: 100%; padding: 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid var(--teal); border-radius: 6px; background: var(--teal); color: #fff; cursor: pointer; margin-bottom: 2rem; transition: opacity 0.15s; }
+    .analyze-btn:hover { opacity: 0.85; }
+    .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* REPORT */
+    .report { display: none; }
+    .report-meta { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.06em; margin-bottom: 1.5rem; }
+
+    .headline-block { font-family: var(--serif); font-size: 24px; line-height: 1.45; color: var(--text-1); border-left: 3px solid var(--text-1); padding-left: 1.25rem; margin-bottom: 2rem; font-style: italic; }
+
+    .exec-summary { font-size: 15px; font-weight: 300; color: var(--text-2); line-height: 1.75; margin-bottom: 2rem; padding: 1.375rem 1.5rem; background: var(--surface2); border-radius: 8px; }
+
+    /* METRICS ROW */
+    .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 2rem; }
+    .metric { background: var(--surface); padding: 1.125rem 1.25rem; }
+    .metric-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 5px; }
+    .metric-value { font-family: var(--serif); font-size: 24px; color: var(--text-1); line-height: 1.1; }
+    .metric-sub { font-size: 11px; font-weight: 300; color: var(--text-3); margin-top: 3px; }
+
+    /* READINESS METER */
+    .readiness-wrap { margin-bottom: 2rem; }
+    .readiness-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .readiness-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+    /* SECTION LABEL */
+    .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding-bottom: 0.625rem; border-bottom: 1px solid var(--border); margin-bottom: 1.125rem; }
+
+    /* ROI CONTROLS */
+    .roi-controls { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.375rem; margin-bottom: 2rem; }
+    .roi-controls-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 1.125rem; }
+    .slider-row { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .slider-label { font-size: 13px; font-weight: 300; color: var(--text-2); }
+    input[type=range] { width: 100%; accent-color: var(--teal); }
+    .slider-val { font-family: var(--mono); font-size: 12px; color: var(--text-1); text-align: right; }
+    .roi-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1.125rem; padding-top: 1.125rem; border-top: 1px solid var(--border); }
+    .roi-total-label { font-size: 13px; font-weight: 300; color: var(--text-2); }
+    .roi-total-value { font-family: var(--serif); font-size: 28px; color: var(--teal); }
+
+    /* OPPORTUNITY CARDS */
+    .opp { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+    .opp-header { padding: 1.25rem; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; transition: background 0.12s; }
+    .opp-header:hover { background: var(--surface2); }
+    .opp-priority-badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .pri-high { background: var(--teal-bg); color: var(--teal); }
+    .pri-medium { background: var(--amber-bg); color: var(--amber); }
+    .pri-low { background: var(--blue-bg); color: var(--blue); }
+    .opp-cat { font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+    .opp-title { font-family: var(--sans); font-size: 16px; font-weight: 500; color: var(--text-1); }
+    .opp-body { display: none; padding: 0 1.25rem 1.375rem; border-top: 1px solid var(--border); }
+    .opp-body.open { display: block; }
+    .opp-desc { font-size: 14px; font-weight: 300; color: var(--text-2); line-height: 1.7; margin: 1rem 0; }
+
+    /* OPP STATS GRID */
+    .opp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+    .opp-stat { background: var(--surface2); border-radius: 6px; padding: 0.75rem; }
+    .opp-stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+    .opp-stat-value { font-family: var(--sans); font-size: 15px; font-weight: 500; color: var(--text-1); }
+
+    /* CONFIDENCE */
+    .conf-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+    .conf-meter { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .conf-fill { height: 100%; border-radius: 2px; }
+    .conf-pct { font-family: var(--mono); font-size: 12px; color: var(--text-2); min-width: 36px; text-align: right; }
+    .conf-rationale { font-size: 12px; font-weight: 300; color: var(--text-3); font-style: italic; margin-bottom: 1rem; line-height: 1.6; }
+
+    /* PANELS */
+    .panel-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 0.625rem; margin-top: 1.125rem; }
+    .risk-item { font-size: 13px; font-weight: 300; color: var(--coral); background: var(--coral-bg); border-radius: 4px; padding: 7px 10px; margin-bottom: 5px; }
+    .obj-card { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+    .obj-q { font-size: 13px; font-weight: 300; color: var(--red); margin-bottom: 6px; font-style: italic; line-height: 1.5; }
+    .obj-q::before { content: '"'; }
+    .obj-q::after { content: '"'; }
+    .obj-a { font-size: 13px; font-weight: 300; color: var(--text-2); line-height: 1.6; }
+    .evidence-item { font-size: 12px; font-weight: 300; color: var(--text-2); border-left: 2px solid var(--border); padding-left: 10px; margin-bottom: 6px; line-height: 1.55; }
+    .evidence-citation { font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-bottom: 2px; }
+
+    /* ADVERSARY SECTION */
+    .adversary-block { background: var(--red-bg); border: 1px solid #ecc0c0; border-radius: 10px; padding: 1.375rem; margin-bottom: 2rem; }
+    .adversary-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); margin-bottom: 0.875rem; }
+    .adversary-q { font-family: var(--serif); font-size: 17px; color: var(--red); font-style: italic; margin-bottom: 0.875rem; line-height: 1.5; }
+    .adversary-a { font-size: 14px; font-weight: 300; color: var(--text-2); line-height: 1.7; }
+
+    /* ENTRY POINT */
+    .entry-block { background: var(--teal-bg); border: 1px solid #9fd8c4; border-radius: 10px; padding: 1.375rem; margin-bottom: 2rem; }
+    .entry-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.625rem; }
+    .entry-text { font-size: 14px; font-weight: 300; color: var(--text-2); line-height: 1.7; }
+
+    /* WATCH OUTS */
+    .watchouts { margin-bottom: 2rem; }
+    .watchout-item { font-size: 13px; font-weight: 300; color: var(--amber); background: var(--amber-bg); border-radius: 5px; padding: 8px 12px; margin-bottom: 6px; line-height: 1.5; }
+
+    /* TOGGLE CHEVRON */
+    .chevron { font-size: 11px; color: var(--text-3); flex-shrink: 0; margin-top: 5px; transition: transform 0.2s; }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* REPORT FOOTER */
+    .report-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 2rem; }
+    .report-footer-byline { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+
+    /* PDF PRINT OVERRIDES */
+    @media print {
+      .no-print { display: none !important; }
+      .opp-body { display: block !important; }
+      body { background: white; }
+      .page { padding: 1rem; }
+    }
+
+    @media (max-width: 580px) {
+      .metrics-row { grid-template-columns: 1fr 1fr; }
+      .opp-stats { grid-template-columns: 1fr 1fr; }
+      .depth-row { grid-template-columns: 1fr; }
+      .slider-row { grid-template-columns: 100px 1fr 50px; }
+      .page { padding: 2rem 1.25rem 5rem; }
+      .masthead h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-tag">AI Transformation Intelligence</div>
+    <h1>How can AI transform and bring value to this company?</h1>
+    <p>Enter any healthcare organization for a grounded, evidence-backed AI transformation analysis.</p>
+  </div>
+
+  <!-- PDF BUTTON TOP (shown after report renders) -->
+  <button class="pdf-btn pdf-btn-top no-print" id="pdfBtnTop" onclick="exportPDF()">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6.5 1v7M4 6l2.5 2.5L9 6M1.5 9.5v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Export PDF
+  </button>
+
+  <div class="search-wrap">
+    <input class="search-input" id="companyInput" type="text"
+      placeholder="e.g. Marquis Companies, Kaiser Permanente, HCA Healthcare..."
+      onkeydown="if(event.key==='Enter') lookupCompany()" />
+  </div>
+
+  <div class="depth-row">
+    <div class="depth-opt active" onclick="setDepth('strategic', this)">Strategic</div>
+    <div class="depth-opt" onclick="setDepth('operational', this)">Operational</div>
+    <div class="depth-opt" onclick="setDepth('technical', this)">Technical</div>
+  </div>
+
+  <button class="search-btn no-print" id="searchBtn" onclick="lookupCompany()">Look up company</button>
+
+  <div class="error-box" id="errorBox"></div>
+  <div class="status" id="status"><div class="spinner"></div><span id="statusText">Searching...</span></div>
+
+  <!-- COMPANY CARD -->
+  <div class="company-card" id="companyCard">
+    <div class="company-card-top">
+      <div class="company-initials" id="companyInitials">—</div>
+      <div>
+        <div class="company-name" id="companyName"></div>
+        <div class="company-meta" id="companyMeta"></div>
+      </div>
+    </div>
+    <div class="company-badges" id="companyBadges"></div>
+    <div class="company-desc" id="companyDesc"></div>
+    <div class="section-label" style="margin-top:0.5rem;">AI opportunity signals</div>
+    <div class="signal-list" id="signalList"></div>
+    <div class="confidence-bar-wrap">
+      <div class="confidence-label">
+        <span>Profile confidence</span>
+        <span id="profileConfPct">—</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="profileConfBar" style="width:0%;background:var(--teal)"></div></div>
+    </div>
+  </div>
+
+  <button class="analyze-btn no-print" id="analyzeBtn" onclick="runAnalysis()">Run AI transformation analysis →</button>
+
+  <!-- REPORT -->
+  <div class="report" id="report">
+    <div class="report-meta" id="reportMeta"></div>
+
+    <div class="headline-block" id="headline"></div>
+    <div class="exec-summary" id="execSummary"></div>
+
+    <div class="section-label">At a glance</div>
+    <div class="metrics-row" id="metricsRow"></div>
+
+    <div class="section-label">AI readiness</div>
+    <div class="readiness-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:300;color:var(--text-2)" id="readinessLabel"></span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text-2)" id="readinessPct"></span>
+      </div>
+      <div class="readiness-track"><div class="readiness-fill" id="readinessFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="section-label no-print">3-year ROI model</div>
+    <div class="roi-controls no-print" id="roiControls">
+      <div class="roi-controls-title">Adjust assumptions</div>
+      <div class="slider-row">
+        <span class="slider-label">Implementation factor</span>
+        <input type="range" id="implFactor" min="50" max="150" value="100" step="5" oninput="updateROI()" />
+        <span class="slider-val" id="implFactorVal">100%</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Adoption rate</span>
+        <input type="range" id="adoptRate" min="40" max="100" value="75" step="5" oninput="updateROI()" />
+        <span class="slider-val" id="adoptRateVal">75%</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Year 1 ramp</span>
+        <input type="range" id="rampFactor" min="20" max="80" value="40" step="5" oninput="updateROI()" />
+        <span class="slider-val" id="rampFactorVal">40%</span>
+      </div>
+      <div class="roi-total">
+        <span class="roi-total-label">Adjusted 3-year value</span>
+        <span class="roi-total-value" id="roiTotalVal">—</span>
+      </div>
+    </div>
+
+    <div class="section-label">Opportunities</div>
+    <div id="oppList"></div>
+
+    <div class="section-label" style="margin-top:2rem;">Strongest objection to AI investment</div>
+    <div class="adversary-block">
+      <div class="adversary-title">Adversary argument</div>
+      <div class="adversary-q" id="adversaryQ"></div>
+      <div class="adversary-a" id="adversaryA"></div>
+    </div>
+
+    <div class="section-label">Recommended entry point</div>
+    <div class="entry-block">
+      <div class="entry-title">Where to start</div>
+      <div class="entry-text" id="entryText"></div>
+    </div>
+
+    <div class="section-label">Watch outs</div>
+    <div class="watchouts" id="watchOuts"></div>
+
+    <!-- REPORT FOOTER WITH BOTTOM PDF BTN -->
+    <div class="report-footer">
+      <span class="report-footer-byline">AI Transformation Intelligence &mdash; <span id="footerCompany"></span></span>
+      <button class="pdf-btn no-print" id="pdfBtnBottom" onclick="exportPDF()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.5 1v7M4 6l2.5 2.5L9 6M1.5 9.5v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Export PDF
+      </button>
+    </div>
+
+  </div><!-- /report -->
+
+</div><!-- /page -->
+
+<script>
+  let currentDepth = 'strategic';
+  let currentProfile = null;
+  let baseValueLow = 0;
+  let baseValueHigh = 0;
+
+  function setDepth(d, el) {
+    currentDepth = d;
+    document.querySelectorAll('.depth-opt').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function showError(msg) {
+    const b = document.getElementById('errorBox');
+    b.textContent = msg;
+    b.style.display = 'block';
+  }
+
+  function clearError() { document.getElementById('errorBox').style.display = 'none'; }
+
+  function setStatus(msg) {
+    document.getElementById('statusText').textContent = msg;
+    document.getElementById('status').style.display = 'flex';
+  }
+
+  function hideStatus() { document.getElementById('status').style.display = 'none'; }
+
+  function initials(name) {
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+
+  function confColor(c) {
+    if (c >= 75) return 'var(--teal)';
+    if (c >= 50) return 'var(--amber)';
+    return 'var(--coral)';
+  }
+
+  function readinessLabel(score) {
+    if (score >= 75) return 'High readiness — strong data foundation and operational urgency';
+    if (score >= 55) return 'Moderate readiness — clear opportunities with some infrastructure gaps';
+    return 'Early stage — significant groundwork needed before full AI deployment';
+  }
+
+  function readinessColor(score) {
+    if (score >= 75) return 'var(--teal)';
+    if (score >= 55) return 'var(--amber)';
+    return 'var(--coral)';
+  }
+
+  function updateROI() {
+    const impl = parseInt(document.getElementById('implFactor').value) / 100;
+    const adopt = parseInt(document.getElementById('adoptRate').value) / 100;
+    const ramp = parseInt(document.getElementById('rampFactor').value) / 100;
+    document.getElementById('implFactorVal').textContent = Math.round(impl * 100) + '%';
+    document.getElementById('adoptRateVal').textContent = Math.round(adopt * 100) + '%';
+    document.getElementById('rampFactorVal').textContent = Math.round(ramp * 100) + '%';
+    const mid = (baseValueLow + baseValueHigh) / 2;
+    const total = (mid * ramp * adopt * impl) + (mid * adopt * impl) + (mid * adopt * impl * 1.15);
+    document.getElementById('roiTotalVal').textContent = '$' + total.toFixed(1) + 'M';
+  }
+
+  function exportPDF() {
+    const companyName = currentProfile ? currentProfile.name : 'AI Analysis';
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `${companyName.replace(/\s+/g, '-')}-AI-Analysis-${date}.pdf`;
+
+    // Open all opportunity cards for PDF
+    document.querySelectorAll('.opp-body').forEach(b => b.classList.add('open'));
+    document.querySelectorAll('.chevron').forEach(c => c.classList.add('open'));
+
+    const element = document.querySelector('.page');
+    const opt = {
+      margin: [0.5, 0.5, 0.5, 0.5],
+      filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    const btns = document.querySelectorAll('.no-print');
+    btns.forEach(b => b.style.visibility = 'hidden');
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      btns.forEach(b => b.style.visibility = '');
+    });
+  }
+
+  async function lookupCompany() {
+    const company = document.getElementById('companyInput').value.trim();
+    if (!company) return;
+    clearError();
+    document.getElementById('companyCard').style.display = 'none';
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('pdfBtnTop').style.display = 'none';
+    document.getElementById('searchBtn').disabled = true;
+
+    const msgs = ['Searching for ' + company + '...', 'Verifying company profile...', 'Identifying AI signals...'];
+    let mi = 0;
+    setStatus(msgs[0]);
+    const iv = setInterval(() => { mi = (mi + 1) % msgs.length; document.getElementById('statusText').textContent = msgs[mi]; }, 2500);
+
+    try {
+      const res = await fetch('/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company })
+      });
+      if (!res.ok) throw new Error('Lookup failed: ' + res.status);
+      let raw = '';
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        raw += decoder.decode(value, { stream: true });
+      }
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const m = clean.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('Could not parse company profile');
+      currentProfile = JSON.parse(m[0]);
+      renderCompanyCard(currentProfile);
+    } catch (err) {
+      showError('Could not find company: ' + err.message);
+    } finally {
+      clearInterval(iv);
+      hideStatus();
+      document.getElementById('searchBtn').disabled = false;
+    }
+  }
+
+  function renderCompanyCard(p) {
+    document.getElementById('companyInitials').textContent = initials(p.name);
+    document.getElementById('companyName').textContent = p.name;
+    document.getElementById('companyMeta').textContent = [p.hq, p.founded ? 'Est. ' + p.founded : null].filter(Boolean).join(' · ');
+    const badges = document.getElementById('companyBadges');
+    badges.innerHTML = '';
+    if (p.sector) badges.innerHTML += `<span class="badge badge-sector">${p.sector}</span>`;
+    if (p.subsector && p.subsector !== p.sector) badges.innerHTML += `<span class="badge badge-sector" style="opacity:0.7">${p.subsector}</span>`;
+    if (p.employees) badges.innerHTML += `<span class="badge badge-size">${p.employees} employees</span>`;
+    if (p.revenue && p.revenue !== 'Unknown') badges.innerHTML += `<span class="badge badge-revenue">${p.revenue}</span>`;
+    document.getElementById('companyDesc').textContent = p.description || '';
+    document.getElementById('signalList').innerHTML = (p.ai_signals || []).map(s => `<div class="signal-item">${s}</div>`).join('');
+    const conf = p.confidence || 70;
+    document.getElementById('profileConfPct').textContent = conf + '%';
+    setTimeout(() => {
+      document.getElementById('profileConfBar').style.width = conf + '%';
+      document.getElementById('profileConfBar').style.background = confColor(conf);
+    }, 100);
+    document.getElementById('companyCard').style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'block';
+    document.getElementById('analyzeBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function runAnalysis() {
+    if (!currentProfile) return;
+    clearError();
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('pdfBtnTop').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = true;
+
+    const msgs = [
+      'Researching ' + currentProfile.name + '...',
+      'Searching peer benchmarks...',
+      'Finding supporting evidence...',
+      'Calculating ROI estimates...',
+      'Building adversary arguments...',
+      'Finalizing report...'
+    ];
+    let mi = 0;
+    setStatus(msgs[0]);
+    const iv = setInterval(() => { mi = (mi + 1) % msgs.length; document.getElementById('statusText').textContent = msgs[mi]; }, 3000);
+
+    try {
+      const res = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_profile: currentProfile, depth: currentDepth })
+      });
+      if (!res.ok) throw new Error('Analysis failed: ' + res.status);
+      let raw = '';
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        raw += decoder.decode(value, { stream: true });
+      }
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const m = clean.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('Could not parse analysis');
+      renderReport(JSON.parse(m[0]));
+    } catch (err) {
+      showError('Analysis error: ' + err.message);
+    } finally {
+      clearInterval(iv);
+      hideStatus();
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  }
+
+  function renderReport(data) {
+    const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('reportMeta').textContent = `${currentProfile.name}  ·  ${currentDepth}  ·  ${date}`;
+    document.getElementById('footerCompany').textContent = currentProfile.name;
+    document.getElementById('headline').textContent = data.headline || '';
+    document.getElementById('execSummary').textContent = data.executive_summary || '';
+
+    const valLow = data.total_value_low || 0;
+    const valHigh = data.total_value_high || 0;
+    baseValueLow = valLow;
+    baseValueHigh = valHigh;
+    const opps = data.opportunities || [];
+    const highCount = opps.filter(o => o.priority === 'high').length;
+
+    document.getElementById('metricsRow').innerHTML = `
+      <div class="metric">
+        <div class="metric-label">3yr value range</div>
+        <div class="metric-value" style="font-size:18px;padding-top:3px;">$${valLow}–${valHigh}M</div>
+        <div class="metric-sub">NPV estimate</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Opportunities</div>
+        <div class="metric-value">${opps.length}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">High priority</div>
+        <div class="metric-value">${highCount}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Readiness</div>
+        <div class="metric-value">${data.readiness_score || '—'}</div>
+        <div class="metric-sub">out of 100</div>
+      </div>`;
+
+    const rs = data.readiness_score || 50;
+    document.getElementById('readinessLabel').textContent = readinessLabel(rs);
+    document.getElementById('readinessPct').textContent = rs + '/100';
+    setTimeout(() => {
+      document.getElementById('readinessFill').style.width = rs + '%';
+      document.getElementById('readinessFill').style.background = readinessColor(rs);
+    }, 200);
+
+    updateROI();
+
+    const sorted = [...opps].sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority]));
+
+    document.getElementById('oppList').innerHTML = sorted.map((opp, i) => {
+      const risks = (opp.risk_factors || []).map(r => `<div class="risk-item">⚠ ${r}</div>`).join('');
+      const objs = (opp.adversary_objections || []).map(o => `
+        <div class="obj-card">
+          <div class="obj-q">${o.objection}</div>
+          <div class="obj-a">${o.response}</div>
+        </div>`).join('');
+      const evid = (opp.evidence || []).map(e => `
+        <div class="evidence-item">
+          <div class="evidence-citation">${e.citation}</div>
+          <div>${e.finding}</div>
+        </div>`).join('');
+      const annLow = ((opp.roi_annual_low || 0) / 1000).toFixed(1);
+      const annHigh = ((opp.roi_annual_high || 0) / 1000).toFixed(1);
+      const conf = opp.confidence || 60;
+
+      return `
+        <div class="opp">
+          <div class="opp-header" onclick="toggleOpp(${i})">
+            <div>
+              <div class="opp-cat">${opp.category || ''}</div>
+              <div class="opp-title">${opp.title}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start;flex-shrink:0">
+              <span class="opp-priority-badge pri-${opp.priority}">${opp.priority}</span>
+              <span class="chevron" id="chev-${i}">▼</span>
+            </div>
+          </div>
+          <div class="opp-body" id="opp-body-${i}">
+            <div class="opp-desc">${opp.description}</div>
+            <div class="opp-stats">
+              <div class="opp-stat"><div class="opp-stat-label">Annual ROI</div><div class="opp-stat-value">$${annLow}–${annHigh}M</div></div>
+              <div class="opp-stat"><div class="opp-stat-label">Payback</div><div class="opp-stat-value">${opp.payback_months || '?'} mo</div></div>
+              <div class="opp-stat"><div class="opp-stat-label">Complexity</div><div class="opp-stat-value">${opp.complexity || '?'}</div></div>
+              <div class="opp-stat"><div class="opp-stat-label">Timeline</div><div class="opp-stat-value">${opp.timeframe || '?'}</div></div>
+            </div>
+            <div class="panel-label">Confidence</div>
+            <div class="conf-row">
+              <div class="conf-meter"><div class="conf-fill" style="width:${conf}%;background:${confColor(conf)}"></div></div>
+              <span class="conf-pct">${conf}%</span>
+            </div>
+            <div class="conf-rationale">${opp.confidence_rationale || ''}</div>
+            ${risks ? `<div class="panel-label">Risk factors</div>${risks}` : ''}
+            ${objs ? `<div class="panel-label">Adversary objections</div>${objs}` : ''}
+            ${evid ? `<div class="panel-label">Evidence & sources</div>${evid}` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('adversaryQ').textContent = data.top_adversary_argument || '';
+    document.getElementById('adversaryA').textContent = data.top_adversary_response || '';
+    document.getElementById('entryText').textContent = data.recommended_entry_point || '';
+    document.getElementById('watchOuts').innerHTML = (data.watch_outs || []).map(w => `<div class="watchout-item">⚡ ${w}</div>`).join('');
+
+    document.getElementById('report').style.display = 'block';
+    document.getElementById('pdfBtnTop').style.display = 'flex';
+    document.getElementById('pdfBtnBottom').style.display = 'flex';
+    document.getElementById('report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => toggleOpp(0), 400);
+  }
+
+  function toggleOpp(i) {
+    const body = document.getElementById('opp-body-' + i);
+    const chev = document.getElementById('chev-' + i);
+    if (!body) return;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chev.classList.toggle('open', !isOpen);
+  }
+</script>
+</body>
+</html>
