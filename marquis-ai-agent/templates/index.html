@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marquis Companies — AI Opportunity Analysis</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f9f8f6;
+      --surface: #ffffff;
+      --border: #e5e3dd;
+      --border-strong: #ccc9c0;
+      --text-primary: #1a1915;
+      --text-secondary: #5a574f;
+      --text-tertiary: #9b9790;
+      --teal-bg: #E1F5EE;
+      --teal-text: #0F6E56;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --blue-bg: #E6F1FB;
+      --blue-text: #185FA5;
+      --coral-bg: #FAECE7;
+      --coral-text: #993C1D;
+      --accent: #1a1915;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .masthead {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .masthead-eyebrow {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 0.5rem;
+    }
+
+    .masthead h1 {
+      font-size: 28px;
+      font-weight: normal;
+      line-height: 1.25;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .masthead p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .control-group label {
+      display: block;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: 'Georgia', serif;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text-primary);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b9790' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .run-btn {
+      width: 100%;
+      padding: 11px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      background: var(--accent);
+      color: #ffffff;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-bottom: 2rem;
+    }
+
+    .run-btn:hover { opacity: 0.85; }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--text-secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error {
+      display: none;
+      font-size: 13px;
+      color: var(--coral-text);
+      background: var(--coral-bg);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-bottom: 1.5rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .report { display: none; }
+
+    .report-meta {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.06em;
+      margin-bottom: 1.5rem;
+    }
+
+    .headline {
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .metric {
+      background: var(--surface);
+      padding: 1rem 1.25rem;
+    }
+
+    .metric-label {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: normal;
+      color: var(--text-primary);
+    }
+
+    .section-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .opp-list { margin-bottom: 2rem; }
+
+    .opp {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem;
+      margin-bottom: 10px;
+    }
+
+    .opp-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .opp-category {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 3px;
+    }
+
+    .opp-title {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: normal;
+    }
+
+    .badge {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .badge-high { background: var(--teal-bg); color: var(--teal-text); }
+    .badge-medium { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-low { background: var(--blue-bg); color: var(--blue-text); }
+
+    .opp-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .opp-footer {
+      display: flex;
+      gap: 1.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+    }
+
+    .opp-stat {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .opp-stat strong {
+      color: var(--text-secondary);
+      font-weight: normal;
+    }
+
+    .watch-out {
+      background: var(--amber-bg);
+      border: 1px solid #e8d5a8;
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      font-size: 14px;
+      color: var(--amber-text);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .watch-label {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+
+    .followups {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    .followup-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 0.875rem;
+    }
+
+    .followup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .followup-btn {
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .followup-btn:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 540px) {
+      .controls { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .followup-grid { grid-template-columns: 1fr; }
+      .page { padding: 2rem 1.25rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="masthead">
+      <div class="masthead-eyebrow">AI Transformation Intelligence</div>
+      <h1>Marquis Companies</h1>
+      <p>Opportunity analysis for post-acute and senior living operations</p>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Business unit</label>
+        <select id="unitSelect">
+          <option value="all">All units (full org)</option>
+          <option value="snf">Skilled nursing facilities</option>
+          <option value="assisted">Assisted & independent living</option>
+          <option value="consonus">Consonus Healthcare</option>
+          <option value="ageright">AgeRight (MA plan + NP services)</option>
+          <option value="home">Marquis at Home</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Analysis depth</label>
+        <select id="depthSelect">
+          <option value="strategic">Strategic (executive)</option>
+          <option value="operational">Operational (workflow)</option>
+          <option value="technical">Technical (build vs. buy)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="runAnalysis()">Generate Report</button>
+
+    <div class="error" id="errorMsg"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span id="loadingText">Analyzing Marquis operations...</span>
+    </div>
+
+    <div class="report" id="report">
+      <div class="report-meta" id="reportMeta"></div>
+      <div class="headline" id="headline"></div>
+      <div class="metrics" id="metrics"></div>
+      <div class="section-label">Opportunities</div>
+      <div class="opp-list" id="oppList"></div>
+      <div id="watchOut"></div>
+      <div class="followups">
+        <div class="followup-label">Explore further</div>
+        <div class="followup-grid">
+          <button class="followup-btn" onclick="ask('What would a 90-day AI pilot roadmap look like for Marquis, starting with their highest-impact opportunity?')">90-day pilot roadmap →</button>
+          <button class="followup-btn" onclick="ask('What AI vendors should Marquis evaluate for their top 3 opportunities? Include build vs. buy framing.')">Vendor landscape →</button>
+          <button class="followup-btn" onclick="ask('What are the regulatory and compliance risks for AI deployment in Marquis skilled nursing facilities?')">Regulatory risks →</button>
+          <button class="followup-btn" onclick="ask('How does Marquis compare to other multi-site post-acute operators on AI readiness?')">Competitive benchmark →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loadingMessages = [
+      'Analyzing Marquis operations...',
+      'Mapping AI opportunities...',
+      'Sizing workforce impact...',
+      'Structuring report...'
+    ];
+
+    function ask(prompt) {
+      const encoded = encodeURIComponent(prompt);
+      window.open(`https://claude.ai/new?q=${encoded}`, '_blank');
+    }
+
+    async function runAnalysis() {
+      const unit = document.getElementById('unitSelect').value;
+      const depth = document.getElementById('depthSelect').value;
+      const btn = document.getElementById('runBtn');
+      const loading = document.getElementById('loading');
+      const report = document.getElementById('report');
+      const errorMsg = document.getElementById('errorMsg');
+
+      btn.disabled = true;
+      loading.style.display = 'flex';
+      report.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      let msgIdx = 0;
+      const msgInterval = setInterval(() => {
+        msgIdx = (msgIdx + 1) % loadingMessages.length;
+        document.getElementById('loadingText').textContent = loadingMessages[msgIdx];
+      }, 2500);
+
+      try {
+        const res = await fetch('/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unit, depth })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || `Server error ${res.status}`);
+        }
+
+        let raw = '';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          raw += decoder.decode(value, { stream: true });
+        }
+
+        const clean = raw.replace(/```json|```/g, '').trim();
+        const data = JSON.parse(clean);
+        renderReport(data, unit, depth);
+
+      } catch (err) {
+        errorMsg.textContent = `Error: ${err.message}`;
+        errorMsg.style.display = 'block';
+      } finally {
+        clearInterval(msgInterval);
+        btn.disabled = false;
+        loading.style.display = 'none';
+      }
+    }
+
+    function renderReport(data, unit, depth) {
+      const unitLabels = {
+        all: 'All business units',
+        snf: 'Skilled nursing',
+        assisted: 'Assisted & independent living',
+        consonus: 'Consonus Healthcare',
+        ageright: 'AgeRight',
+        home: 'Marquis at Home'
+      };
+
+      const s = data.summary;
+      const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      document.getElementById('reportMeta').textContent =
+        `${unitLabels[unit] || unit}  ·  ${depth}  ·  ${date}`;
+
+      document.getElementById('headline').textContent = s.headline;
+
+      document.getElementById('metrics').innerHTML = `
+        <div class="metric">
+          <div class="metric-label">Opportunities</div>
+          <div class="metric-value">${s.total_opportunities}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">High priority</div>
+          <div class="metric-value">${s.high_priority}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">FTE impact</div>
+          <div class="metric-value" style="font-size:16px; padding-top:6px;">${s.est_fte_impact}</div>
+        </div>`;
+
+      const sorted = [...data.opportunities].sort((a, b) => {
+        const o = { high: 0, medium: 1, low: 2 };
+        return o[a.priority] - o[b.priority];
+      });
+
+      document.getElementById('oppList').innerHTML = sorted.map(opp => `
+        <div class="opp">
+          <div class="opp-top">
+            <div>
+              <div class="opp-category">${opp.category}</div>
+              <div class="opp-title">${opp.title}</div>
+            </div>
+            <span class="badge badge-${opp.priority}">${opp.priority}</span>
+          </div>
+          <div class="opp-desc">${opp.description}</div>
+          <div class="opp-footer">
+            <div class="opp-stat">Impact: <strong>${opp.impact}</strong></div>
+            <div class="opp-stat">Complexity: <strong>${opp.complexity}</strong></div>
+            <div class="opp-stat">Timeline: <strong>${opp.timeframe}</strong></div>
+          </div>
+        </div>`).join('');
+
+      if (data.watch_out) {
+        document.getElementById('watchOut').innerHTML = `
+          <div class="watch-out">
+            <div class="watch-label">Watch out</div>
+            ${data.watch_out}
+          </div>`;
+      }
+
+      document.getElementById('report').style.display = 'block';
+      document.getElementById('report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>
