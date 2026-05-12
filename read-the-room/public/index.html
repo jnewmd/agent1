@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Read the Room — Relationship Advisor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F7F3ED;
+      --warm-white: #FDFAF6;
+      --bark: #3D2B1A;
+      --bark-mid: #6B4C35;
+      --bark-light: #A07C5E;
+      --rust: #C15A2A;
+      --rust-light: #E8866A;
+      --sage: #4A6741;
+      --sage-light: #7A9B70;
+      --gold: #C9933A;
+      --gold-light: #E8C070;
+      --stone: #8C8278;
+      --stone-light: #C4BBB1;
+      --border: rgba(61,43,26,0.12);
+    }
+
+    body {
+      background: var(--cream);
+      color: var(--bark);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      padding: 2.5rem 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--warm-white);
+      position: relative;
+    }
+
+    .header-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rust);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 600;
+      color: var(--bark);
+      line-height: 1.2;
+      margin-bottom: 0.6rem;
+    }
+
+    header p.tagline {
+      color: var(--bark-light);
+      font-size: 0.95rem;
+      max-width: 500px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+
+    /* Main layout */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* Steps progress */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+      justify-content: center;
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--stone-light);
+      transition: all 0.3s ease;
+    }
+
+    .step-dot.active { background: var(--rust); transform: scale(1.3); }
+    .step-dot.done { background: var(--sage); }
+
+    /* Cards */
+    .card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.5rem;
+      animation: slideUp 0.4s ease forwards;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Input area */
+    .input-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--bark);
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+
+    .input-sublabel {
+      font-size: 0.85rem;
+      color: var(--stone);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--bark);
+      resize: vertical;
+      transition: border-color 0.2s;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--rust);
+    }
+
+    textarea::placeholder { color: var(--stone-light); }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--bark);
+      color: var(--cream);
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-primary:hover { background: var(--bark-mid); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--bark-mid);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--bark-light); color: var(--bark); }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    /* Question cards */
+    .question-block {
+      margin-bottom: 2rem;
+    }
+
+    .question-text {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--bark);
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .question-num {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--rust);
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .option-btn {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--bark-mid);
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+
+    .option-btn:hover { border-color: var(--rust-light); color: var(--bark); background: var(--warm-white); }
+
+    .option-btn.selected {
+      border-color: var(--rust);
+      background: rgba(193,90,42,0.06);
+      color: var(--bark);
+      font-weight: 500;
+    }
+
+    /* Situation summary */
+    .situation-summary {
+      background: rgba(74,103,65,0.07);
+      border-left: 3px solid var(--sage);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: var(--bark-mid);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* Advice output */
+    .advice-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 600;
+      color: var(--bark);
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+    }
+
+    .advice-divider {
+      width: 40px;
+      height: 3px;
+      background: var(--rust);
+      border-radius: 2px;
+      margin: 1rem 0 1.75rem;
+    }
+
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 520px) {
+      .perspective-grid { grid-template-columns: 1fr; }
+    }
+
+    .perspective-card {
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .perspective-card.her {
+      background: rgba(201,147,58,0.08);
+      border: 1px solid rgba(201,147,58,0.2);
+    }
+
+    .perspective-card.his {
+      background: rgba(74,103,65,0.07);
+      border: 1px solid rgba(74,103,65,0.2);
+    }
+
+    .perspective-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .perspective-card.her .perspective-label { color: var(--gold); }
+    .perspective-card.his .perspective-label { color: var(--sage); }
+
+    .perspective-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .perspective-card.her .perspective-title { color: var(--bark); }
+    .perspective-card.his .perspective-title { color: var(--bark); }
+
+    .perspective-content {
+      font-size: 0.875rem;
+      color: var(--bark-mid);
+      line-height: 1.6;
+    }
+
+    .what-happened {
+      background: rgba(193,90,42,0.06);
+      border: 1px solid rgba(193,90,42,0.18);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .what-happened-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--rust);
+      margin-bottom: 0.35rem;
+    }
+
+    .what-happened-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--bark);
+      line-height: 1.5;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--stone);
+      margin-bottom: 1rem;
+    }
+
+    .action-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .action-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bark);
+      color: var(--cream);
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-body { flex: 1; }
+
+    .step-title {
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--bark);
+      margin-bottom: 0.2rem;
+    }
+
+    .step-detail {
+      font-size: 0.875rem;
+      color: var(--bark-mid);
+      line-height: 1.55;
+    }
+
+    .avoid-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .avoid-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--bark-mid);
+      line-height: 1.5;
+    }
+
+    .avoid-x {
+      color: var(--rust);
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .closing-thought {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--bark-mid);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* Loading state */
+    .loading-state {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--rust);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.25rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.9rem;
+      color: var(--stone);
+      font-weight: 300;
+    }
+
+    .loading-subtext {
+      font-size: 0.8rem;
+      color: var(--stone-light);
+      margin-top: 0.35rem;
+    }
+
+    /* Error */
+    .error-msg {
+      background: rgba(193,90,42,0.08);
+      border: 1px solid rgba(193,90,42,0.25);
+      border-radius: 10px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.875rem;
+      color: var(--rust);
+      margin-top: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.78rem;
+      color: var(--stone-light);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Char counter */
+    .char-counter {
+      font-size: 0.75rem;
+      color: var(--stone-light);
+      text-align: right;
+      margin-top: 0.35rem;
+    }
+
+    .char-counter.near-limit { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="header-eyebrow">Relationship Intelligence</p>
+  <h1>Read the Room</h1>
+  <p class="tagline">Real advice for men who want to show up better in love — told straight, without judgment.</p>
+</header>
+
+<main>
+
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- STEP 1: Input -->
+  <div id="step1" class="card">
+    <p class="input-label">What's going on?</p>
+    <p class="input-sublabel">Describe the situation — a fight, a gift gone wrong, something she said, a fear you have. The more honest, the better the advice.</p>
+    <textarea
+      id="situationInput"
+      placeholder="Example: She got upset when I didn't come to her work thing. I thought it wasn't a big deal because she never mentioned it was important. Now she's barely talking to me and I don't know what I did wrong..."
+      maxlength="2000"
+    ></textarea>
+    <p class="char-counter" id="charCounter">0 / 2000</p>
+    <div id="step1Error" class="error-msg hidden"></div>
+    <div class="btn-row">
+      <span style="font-size:0.8rem; color:var(--stone); font-weight:300;">Takes ~15 seconds</span>
+      <button class="btn-primary" id="analyzeBtn" onclick="analyzeInput()">
+        Understand my situation →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Loading analysis -->
+  <div id="step2Loading" class="card hidden">
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Reading between the lines...</p>
+      <p class="loading-subtext">Figuring out what questions will actually help</p>
+    </div>
+  </div>
+
+  <!-- STEP 2: Questions -->
+  <div id="step2Questions" class="card hidden">
+    <p class="input-label" style="margin-bottom:0.35rem">A few things to help me help you</p>
+    <p class="input-sublabel" style="margin-bottom:1.5rem">Answer what you can. You can skip ahead if you'd rather.</p>
+
+    <div class="situation-summary" id="situationSummary"></div>
+
+    <div id="questionsContainer"></div>
+
+    <div id="step2Error" class="error-msg hidden"></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="skipQuestions()">Skip — just give me advice</button>
+      <button class="btn-primary" id="adviseBtn" onclick="getAdvice()">
+        Get my advice →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Loading advice -->
+  <div id="step3Loading" class="card hidden">
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Thinking this through from both sides...</p>
+      <p class="loading-subtext">This takes a moment to get right</p>
+    </div>
+  </div>
+
+  <!-- STEP 3: Advice output -->
+  <div id="step3Advice" class="hidden">
+    <div class="card" id="adviceCard">
+      <!-- Dynamically populated -->
+    </div>
+    <div style="text-align:center; margin-top:0.5rem;">
+      <button class="btn-secondary" onclick="startOver()">← Start over with a new situation</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Read the Room — Built for men trying to be better partners. Powered by AI with a lot of empathy.
+</footer>
+
+<script>
+  let analysisData = null;
+  let selectedAnswers = {};
+
+  // Char counter
+  document.getElementById('situationInput').addEventListener('input', function() {
+    const len = this.value.length;
+    const counter = document.getElementById('charCounter');
+    counter.textContent = `${len} / 2000`;
+    counter.className = len > 1800 ? 'char-counter near-limit' : 'char-counter';
+  });
+
+  function setStep(step) {
+    const d1 = document.getElementById('dot1');
+    const d2 = document.getElementById('dot2');
+    const d3 = document.getElementById('dot3');
+    d1.className = 'step-dot' + (step === 1 ? ' active' : ' done');
+    d2.className = 'step-dot' + (step === 2 ? ' active' : step > 2 ? ' done' : '');
+    d3.className = 'step-dot' + (step === 3 ? ' active' : '');
+  }
+
+  async function analyzeInput() {
+    const input = document.getElementById('situationInput').value.trim();
+    const errorEl = document.getElementById('step1Error');
+    errorEl.classList.add('hidden');
+
+    if (input.length < 20) {
+      errorEl.textContent = 'Please describe your situation in a bit more detail — a sentence or two at minimum.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2Loading').classList.remove('hidden');
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+      analysisData = data;
+      renderQuestions(data);
+
+      document.getElementById('step2Loading').classList.add('hidden');
+      document.getElementById('step2Questions').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      document.getElementById('step2Loading').classList.add('hidden');
+      document.getElementById('step1').classList.remove('hidden');
+      const errEl = document.getElementById('step1Error');
+      errEl.textContent = err.message || 'Failed to analyze. Please try again.';
+      errEl.classList.remove('hidden');
+      setStep(1);
+    }
+  }
+
+  function renderQuestions(data) {
+    document.getElementById('situationSummary').textContent = data.situationSummary;
+
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+    selectedAnswers = {};
+
+    data.questions.forEach((q, i) => {
+      const block = document.createElement('div');
+      block.className = 'question-block';
+
+      const num = document.createElement('p');
+      num.className = 'question-num';
+      num.textContent = `Question ${i + 1}`;
+
+      const qText = document.createElement('p');
+      qText.className = 'question-text';
+      qText.textContent = q.question;
+
+      const optGrid = document.createElement('div');
+      optGrid.className = 'options-grid';
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt.text;
+        btn.onclick = () => {
+          // Deselect others in this question
+          optGrid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedAnswers[q.id] = { question: q.question, answer: opt.text };
+        };
+        optGrid.appendChild(btn);
+      });
+
+      block.appendChild(num);
+      block.appendChild(qText);
+      block.appendChild(optGrid);
+      container.appendChild(block);
+    });
+  }
+
+  function skipQuestions() {
+    selectedAnswers = {};
+    getAdvice();
+  }
+
+  async function getAdvice() {
+    const input = document.getElementById('situationInput').value.trim();
+    const answers = Object.values(selectedAnswers);
+
+    document.getElementById('step2Questions').classList.add('hidden');
+    document.getElementById('step3Loading').classList.remove('hidden');
+    setStep(3);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const res = await fetch('/api/advise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input, answers })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+      document.getElementById('step3Loading').classList.add('hidden');
+      renderAdvice(data);
+      document.getElementById('step3Advice').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      document.getElementById('step3Loading').classList.add('hidden');
+      document.getElementById('step2Questions').classList.remove('hidden');
+      const errEl = document.getElementById('step2Error');
+      errEl.textContent = err.message || 'Failed to get advice. Please try again.';
+      errEl.classList.remove('hidden');
+      setStep(2);
+    }
+  }
+
+  function renderAdvice(data) {
+    const card = document.getElementById('adviceCard');
+
+    card.innerHTML = `
+      <h2 class="advice-headline">${escHtml(data.headline)}</h2>
+      <div class="advice-divider"></div>
+
+      <div class="perspective-grid">
+        <div class="perspective-card her">
+          <p class="perspective-label">Her perspective</p>
+          <p class="perspective-title">${escHtml(data.herPerspective.title)}</p>
+          <p class="perspective-content">${escHtml(data.herPerspective.content)}</p>
+        </div>
+        <div class="perspective-card his">
+          <p class="perspective-label">Your perspective</p>
+          <p class="perspective-title">${escHtml(data.hisPerspective.title)}</p>
+          <p class="perspective-content">${escHtml(data.hisPerspective.content)}</p>
+        </div>
+      </div>
+
+      <div class="what-happened">
+        <p class="what-happened-label">What's really going on</p>
+        <p class="what-happened-text">${escHtml(data.whatReallyHappened)}</p>
+      </div>
+
+      <p class="section-title">What to actually do</p>
+      <div class="action-steps">
+        ${data.actionSteps.map((s, i) => `
+          <div class="action-step">
+            <div class="step-num">${i + 1}</div>
+            <div class="step-body">
+              <p class="step-title">${escHtml(s.step)}</p>
+              <p class="step-detail">${escHtml(s.detail)}</p>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <p class="section-title" style="margin-top:1.5rem">Don't do this</p>
+      <div class="avoid-list">
+        ${data.thingsToAvoid.map(t => `
+          <div class="avoid-item">
+            <span class="avoid-x">✕</span>
+            <span>${escHtml(t)}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="closing-thought">${escHtml(data.closingThought)}</div>
+    `;
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function startOver() {
+    // Reset everything
+    document.getElementById('situationInput').value = '';
+    document.getElementById('charCounter').textContent = '0 / 2000';
+    document.getElementById('step1Error').classList.add('hidden');
+    document.getElementById('questionsContainer').innerHTML = '';
+    selectedAnswers = {};
+    analysisData = null;
+
+    document.getElementById('step3Advice').classList.add('hidden');
+    document.getElementById('step3Loading').classList.add('hidden');
+    document.getElementById('step2Questions').classList.add('hidden');
+    document.getElementById('step2Loading').classList.add('hidden');
+    document.getElementById('step1').classList.remove('hidden');
+
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Allow Enter to submit (Shift+Enter for newlines)
+  document.getElementById('situationInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.metaKey) {
+      analyzeInput();
+    }
+  });
+</script>
+</body>
+</html>
