@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LANES / DPH Intelligence Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --surface2: #F0EEE8;
+  --text: #1A1A18;
+  --text2: #6B6960;
+  --text3: #9B9890;
+  --border: rgba(26,26,24,0.12);
+  --border2: rgba(26,26,24,0.22);
+  --teal: #0F6E56;
+  --teal-bg: #E1F5EE;
+  --teal-text: #085041;
+  --coral: #993C1D;
+  --coral-bg: #FAECE7;
+  --coral-text: #712B13;
+  --purple: #534AB7;
+  --purple-bg: #EEEDFE;
+  --purple-text: #3C3489;
+  --amber: #854F0B;
+  --amber-bg: #FAEEDA;
+  --amber-text: #633806;
+  --blue: #185FA5;
+  --blue-bg: #E6F1FB;
+  --blue-text: #0C447C;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.page-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+header {
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+}
+
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.site-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.site-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--teal);
+  background: var(--teal-bg);
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+header p {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 560px;
+  line-height: 1.6;
+}
+
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.pipe-step {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  background: var(--surface);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pipe-step.active {
+  background: var(--teal-bg);
+  border-color: var(--teal);
+  color: var(--teal-text);
+  font-weight: 500;
+}
+
+.pipe-step.done {
+  background: var(--blue-bg);
+  border-color: var(--blue);
+  color: var(--blue-text);
+}
+
+.pipe-arrow { color: var(--text3); font-size: 12px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.card-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+textarea, select {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  resize: vertical;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+
+textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231A1A18' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.field-label-row label {
+  margin-bottom: 0;
+}
+
+.clear-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.clear-btn:hover {
+  color: var(--coral);
+  background: var(--coral-bg);
+}
+
+.lens-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.lens-pill {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all 0.2s;
+  user-select: none;
+  font-weight: 400;
+}
+
+.lens-pill.on {
+  background: var(--purple-bg);
+  border-color: var(--purple);
+  color: var(--purple-text);
+  font-weight: 500;
+}
+
+.run-btn {
+  width: 100%;
+  padding: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1.25rem;
+  transition: opacity 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.run-btn:hover:not(:disabled) { opacity: 0.85; }
+.run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.progress-log {
+  display: none;
+  margin: 1.25rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.prog-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.prog-row:last-child { border-bottom: none; }
+
+.prog-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: var(--surface2);
+  font-size: 11px;
+}
+
+.prog-icon.running { background: var(--amber-bg); }
+.prog-icon.done { background: var(--teal-bg); color: var(--teal); }
+
+.prog-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.prog-detail {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+}
+
+.results-section { display: none; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2rem 0 1rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-head h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.sort-controls {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.sort-lbl {
+  font-size: 12px;
+  color: var(--text3);
+  margin-right: 2px;
+}
+
+.sort-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sort-btn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.q-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.q-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tier-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 3px;
+  border: 1px solid;
+}
+
+.t1 { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue); }
+.t2 { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple); }
+.t3 { background: var(--teal-bg); color: var(--teal-text); border-color: var(--teal); }
+.tb { background: var(--coral-bg); color: var(--coral-text); border-color: var(--coral); }
+
+.q-text {
+  font-family: 'Instrument Serif', serif;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.q-rationale {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.metric-chip {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+.mc-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.mc-val {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.score-bars { margin-bottom: 1rem; }
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.score-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.score-track {
+  flex: 1;
+  height: 3px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1.2s ease;
+}
+
+.score-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text2);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.info-block {
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+.info-block .ib-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.info-block .ib-text {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pathway { background: var(--teal-bg); border: 1px solid rgba(15,110,86,0.25); }
+.pathway .ib-lbl { color: var(--teal-text); }
+.pathway .ib-text { color: var(--teal-text); }
+
+.adversary { background: var(--coral-bg); border: 1px solid rgba(153,60,29,0.25); }
+.adversary .ib-lbl { color: var(--coral-text); }
+.adversary .ib-text { color: var(--coral-text); }
+
+.sowhat { background: var(--amber-bg); border: 1px solid rgba(133,79,11,0.25); }
+.sowhat .ib-lbl { color: var(--amber-text); }
+.sowhat .ib-text { color: var(--amber-text); font-style: italic; }
+
+.export-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 9px 16px;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.export-btn:hover { background: var(--surface2); }
+
+.err-box {
+  background: #FCEBEB;
+  border: 1px solid #E24B4A;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #501313;
+  margin-top: 1rem;
+  display: none;
+  line-height: 1.5;
+}
+
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.spinner.dark {
+  border-color: var(--border2);
+  border-top-color: var(--teal);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+
+@media (max-width: 600px) {
+  .page-wrap { padding: 1.5rem 1rem 3rem; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .section-head { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <header>
+    <div class="header-top">
+      <h1 class="site-title">LANES / DPH Intelligence Engine</h1>
+      <span class="site-tag">LA County Public Health</span>
+    </div>
+    <p>Agentic question generation for HIE data. Describe your dataset and the engine generates tiered analytical questions, stress-tests them adversarially, and prioritizes by health impact and actionability.</p>
+  </header>
+
+  <div class="pipeline" id="pipeline">
+    <span class="pipe-step active" id="ps-intake">① Intake</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step" id="ps-generate">② Generate</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step" id="ps-adversary">③ Adversary</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step" id="ps-prioritize">④ Prioritize</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step" id="ps-output">⑤ Output</span>
+  </div>
+
+  <div class="card" id="intakeCard">
+    <div class="card-title">Dataset context</div>
+    <div class="card-sub">Describe the data available in this HIE context. The more specific the input, the sharper the questions.</div>
+
+    <div class="field">
+      <div class="field-label-row">
+        <label>Data sources available</label>
+        <button class="clear-btn" onclick="clearField('fSources', defaultSources)">Clear</button>
+      </div>
+      <textarea id="fSources" rows="4"></textarea>
+    </div>
+
+    <div class="field">
+      <div class="field-label-row">
+        <label>Geographic and population scope</label>
+        <button class="clear-btn" onclick="clearField('fScope', defaultScope)">Clear</button>
+      </div>
+      <textarea id="fScope" rows="2"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Known gaps or data limitations</label>
+      <textarea id="fGaps" rows="2" placeholder="e.g. 6-month claims lag, small-number suppression below n=10, undocumented population underrepresented, behavioral health data siloed, no real-time pharmacy feed..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Decisions leadership is currently trying to make</label>
+      <textarea id="fDecisions" rows="2" placeholder="e.g. where to allocate mobile clinic resources, which chronic disease programs to expand, how to reduce avoidable ED utilization, post-CDC-cut reallocation priorities..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Priority lenses — select all that apply</label>
+      <div class="lens-pills" id="lenses">
+        <span class="lens-pill on" data-v="health_equity">Health equity</span>
+        <span class="lens-pill on" data-v="fraud_waste">Fraud, waste & abuse</span>
+        <span class="lens-pill on" data-v="ai_transformation">AI / admin transformation</span>
+        <span class="lens-pill on" data-v="chronic_disease">Chronic disease burden</span>
+        <span class="lens-pill on" data-v="behavioral_health">Behavioral health</span>
+        <span class="lens-pill" data-v="maternal_child">Maternal & child health</span>
+        <span class="lens-pill" data-v="emergency_prep">Emergency preparedness</span>
+        <span class="lens-pill" data-v="hiv_std">HIV / STD prevention</span>
+        <span class="lens-pill" data-v="environmental">Environmental health</span>
+        <span class="lens-pill" data-v="novel_practice">Novel care models</span>
+        <span class="lens-pill" data-v="housing_health">Housing & social determinants</span>
+        <span class="lens-pill" data-v="workforce">Workforce & access gaps</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Boldness mode</label>
+      <select id="fBoldness">
+        <option value="standard">Standard — grounded in current practice, high feasibility</option>
+        <option value="bold" selected>Bold — includes novel hypotheses and new practice models</option>
+        <option value="moonshot">Moonshot — reimagine what is possible with full HIE data access</option>
+      </select>
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="runEngine()">
+      Run intelligence engine
+    </button>
+    <div class="err-box" id="errBox"></div>
+  </div>
+
+  <div class="progress-log" id="progLog">
+    <div class="prog-row">
+      <div class="prog-icon" id="pi-intake">①</div>
+      <div>
+        <div class="prog-label">Intake & context brief</div>
+        <div class="prog-detail" id="pd-intake">Waiting...</div>
+      </div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-icon" id="pi-generate">②</div>
+      <div>
+        <div class="prog-label">Question generation</div>
+        <div class="prog-detail" id="pd-generate">Waiting...</div>
+      </div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-icon" id="pi-adversary">③</div>
+      <div>
+        <div class="prog-label">Adversarial challenge</div>
+        <div class="prog-detail" id="pd-adversary">Waiting...</div>
+      </div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-icon" id="pi-prioritize">④</div>
+      <div>
+        <div class="prog-label">Prioritization & scoring</div>
+        <div class="prog-detail" id="pd-prioritize">Waiting...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="section-head">
+      <h2>Question agenda</h2>
+      <div class="sort-controls">
+        <span class="sort-lbl">Sort:</span>
+        <button class="sort-btn active" onclick="doSort('priority')" id="sb-priority">Priority</button>
+        <button class="sort-btn" onclick="doSort('novelty')" id="sb-novelty">Novelty</button>
+        <button class="sort-btn" onclick="doSort('feasibility')" id="sb-feasibility">Feasibility</button>
+        <button class="sort-btn" onclick="doSort('tier')" id="sb-tier">Tier</button>
+      </div>
+    </div>
+    <div id="qContainer"></div>
+    <div class="export-row">
+      <button class="export-btn" onclick="exportTxt()">↓ Export as text agenda</button>
+      <button class="export-btn" onclick="exportJSON()">↓ Export as JSON</button>
+    </div>
+  </div>
+
+  <footer>
+    LANES / DPH Intelligence Engine &nbsp;·&nbsp; LA County Department of Public Health
+  </footer>
+
+</div>
+
+<script>
+let allQ = [];
+let sortMode = 'priority';
+
+const defaultSources = `LANES HIE: claims data (Medi-Cal, commercial), clinical encounter data from 300+ organizations, FHIR-based medication histories, lab results, care transitions, and referral patterns. DPH: vital records, communicable disease surveillance, environmental health data, HIV/STD registry, immunization registry, emergency department syndromic surveillance, home visiting records, and maternal/child health programs.`;
+
+const defaultScope = `LA County, 10M residents. Priority focus on South LA and East LA zip codes. Core population: Medi-Cal beneficiaries, unhoused individuals, undocumented residents, and communities with high social vulnerability index scores.`;
+
+function clearField(id, defaultVal) {
+  const el = document.getElementById(id);
+  if (el.value === defaultVal) {
+    el.value = '';
+    el.focus();
+  } else {
+    el.value = defaultVal;
+  }
+}
+
+// Populate defaults on load
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('fSources').value = defaultSources;
+  document.getElementById('fScope').value = defaultScope;
+});
+
+document.querySelectorAll('.lens-pill').forEach(p => p.addEventListener('click', () => p.classList.toggle('on')));
+
+function setPipe(step) {
+  const order = ['intake','generate','adversary','prioritize','output'];
+  const idx = order.indexOf(step);
+  order.forEach((s, i) => {
+    const el = document.getElementById('ps-' + s);
+    if (!el) return;
+    el.className = 'pipe-step' + (i < idx ? ' done' : i === idx ? ' active' : '');
+  });
+}
+
+function setProgRunning(id, txt) {
+  const ic = document.getElementById('pi-' + id);
+  ic.className = 'prog-icon running';
+  ic.innerHTML = '<div class="spinner dark"></div>';
+  document.getElementById('pd-' + id).textContent = txt;
+}
+
+function setProgDone(id, txt) {
+  const ic = document.getElementById('pi-' + id);
+  ic.className = 'prog-icon done';
+  ic.innerHTML = '✓';
+  document.getElementById('pd-' + id).textContent = txt;
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Server error ' + res.status);
+  }
+  return res.json();
+}
+
+async function runEngine() {
+  const sources = document.getElementById('fSources').value.trim();
+  if (!sources) { showErr('Please describe the data sources available to start.'); return; }
+  hideErr();
+
+  const scope = document.getElementById('fScope').value.trim();
+  const gaps = document.getElementById('fGaps').value.trim();
+  const decisions = document.getElementById('fDecisions').value.trim();
+  const boldness = document.getElementById('fBoldness').value;
+  const lenses = Array.from(document.querySelectorAll('.lens-pill.on')).map(p => p.dataset.v);
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Running engine...';
+
+  document.getElementById('progLog').style.display = 'block';
+  document.getElementById('resultsSection').style.display = 'none';
+  allQ = [];
+
+  try {
+    setPipe('generate');
+    setProgRunning('intake', 'Parsing context and building brief...');
+    await delay(300);
+    setProgDone('intake', 'Context brief structured — ' + lenses.length + ' priority lenses active');
+
+    setPipe('adversary');
+    setProgRunning('generate', 'Generating tiered questions across all lenses...');
+
+    const genData = await apiPost('/api/generate', { sources, scope, gaps, decisions, lenses, boldness });
+    const questions = genData.questions;
+    setProgDone('generate', questions.length + ' questions generated across ' + new Set(questions.map(q => q.tier)).size + ' tiers');
+
+    setPipe('adversary');
+    setProgRunning('adversary', 'Stress-testing each question for validity and bias...');
+
+    const advData = await apiPost('/api/challenge', { questions });
+    const challenges = advData.challenges || [];
+
+    const merged = questions.map((q, i) => {
+      const ch = challenges.find(c => c.i === i) || {};
+      return { ...q, challenge: ch.challenge || null, refinement: ch.refinement || null };
+    });
+
+    setProgDone('adversary', challenges.length + ' adversarial challenges applied');
+
+    setPipe('prioritize');
+    setProgRunning('prioritize', 'Computing final rankings with health impact weighting...');
+    await delay(400);
+
+    merged.sort((a, b) => b.priority_score - a.priority_score);
+    allQ = merged;
+    setProgDone('prioritize', 'Ranking complete — top score: ' + merged[0].priority_score + '/100');
+
+    setPipe('output');
+    renderQ(allQ);
+    document.getElementById('resultsSection').style.display = 'block';
+
+    btn.disabled = false;
+    btn.innerHTML = '↺ Run again with new inputs';
+
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = 'Run intelligence engine';
+    showErr('Engine error: ' + err.message);
+  }
+}
+
+function barColor(s) {
+  if (s >= 80) return '#0F6E56';
+  if (s >= 60) return '#185FA5';
+  if (s >= 40) return '#854F0B';
+  return '#9B9890';
+}
+
+function tierInfo(t) {
+  return {
+    '1': { label: 'Tier 1 · descriptive', cls: 't1' },
+    '2': { label: 'Tier 2 · comparative', cls: 't2' },
+    '3': { label: 'Tier 3 · actionable', cls: 't3' },
+    'bold': { label: 'Bold / novel', cls: 'tb' }
+  }[t] || { label: 'Tier 1', cls: 't1' };
+}
+
+function cardHTML(q) {
+  const ti = tierInfo(q.tier);
+  const ps = q.priority_score || 50, ns = q.novelty_score || 50, fs = q.feasibility_score || 50;
+  return `<div class="q-card">
+  <div class="q-top">
+    <span class="tier-badge ${ti.cls}">${ti.label}</span>
+    <span class="q-text">${esc(q.question)}</span>
+  </div>
+  <div class="q-rationale">${esc(q.rationale || '')}</div>
+  <div class="metrics-grid">
+    ${q.health_metric ? `<div class="metric-chip"><div class="mc-lbl">Health / cost impact</div><div class="mc-val">${esc(q.health_metric)}</div></div>` : ''}
+    ${q.action_owner ? `<div class="metric-chip"><div class="mc-lbl">Action owner</div><div class="mc-val">${esc(q.action_owner)}</div></div>` : ''}
+    ${q.data_feasibility ? `<div class="metric-chip"><div class="mc-lbl">Data feasibility</div><div class="mc-val">${esc(q.data_feasibility)}</div></div>` : ''}
+  </div>
+  <div class="score-bars">
+    ${scoreRow('Priority', ps)}
+    ${scoreRow('Novelty', ns)}
+    ${scoreRow('Feasibility', fs)}
+  </div>
+  ${q.pathway_narrative ? `<div class="info-block pathway"><div class="ib-lbl">⟶ How this becomes action</div><div class="ib-text">${esc(q.pathway_narrative)}</div></div>` : ''}
+  ${q.challenge ? `<div class="info-block adversary"><div class="ib-lbl">⚔ Adversarial challenge${q.refinement ? ' — and refinement' : ''}</div><div class="ib-text">${esc(q.challenge)}${q.refinement ? '<br><strong>Refinement:</strong> ' + esc(q.refinement) : ''}</div></div>` : ''}
+  ${q.so_what ? `<div class="info-block sowhat"><div class="ib-lbl">◆ So what</div><div class="ib-text">${esc(q.so_what)}</div></div>` : ''}
+</div>`;
+}
+
+function scoreRow(label, val) {
+  return `<div class="score-row">
+    <span class="score-lbl">${label}</span>
+    <div class="score-track"><div class="score-fill" data-w="${val}" style="background:${barColor(val)}"></div></div>
+    <span class="score-num">${val}</span>
+  </div>`;
+}
+
+function renderQ(qs) {
+  let html = '';
+  if (sortMode === 'tier') {
+    ['3','bold','2','1'].forEach(t => {
+      qs.filter(q => q.tier === t).forEach(q => { html += cardHTML(q); });
+    });
+  } else {
+    qs.forEach(q => { html += cardHTML(q); });
+  }
+  document.getElementById('qContainer').innerHTML = html;
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.score-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  });
+}
+
+function doSort(by) {
+  sortMode = by;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sb-' + by).classList.add('active');
+  const sorted = [...allQ];
+  if (by === 'priority') sorted.sort((a, b) => b.priority_score - a.priority_score);
+  else if (by === 'novelty') sorted.sort((a, b) => b.novelty_score - a.novelty_score);
+  else if (by === 'feasibility') sorted.sort((a, b) => b.feasibility_score - a.feasibility_score);
+  renderQ(sorted);
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.score-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  });
+}
+
+function exportTxt() {
+  if (!allQ.length) return;
+  const lines = ['LANES / DPH Intelligence Engine — Question Agenda', '='.repeat(55), '', new Date().toLocaleDateString(), ''];
+  allQ.forEach((q, i) => {
+    lines.push((i + 1) + '. [Tier ' + q.tier.toUpperCase() + '] ' + q.question);
+    if (q.rationale) lines.push('   Rationale: ' + q.rationale);
+    if (q.health_metric) lines.push('   Health/cost impact: ' + q.health_metric);
+    if (q.action_owner) lines.push('   Action owner: ' + q.action_owner);
+    if (q.data_feasibility) lines.push('   Data feasibility: ' + q.data_feasibility);
+    if (q.pathway_narrative) lines.push('   Path to action: ' + q.pathway_narrative);
+    if (q.challenge) lines.push('   Adversarial challenge: ' + q.challenge);
+    if (q.refinement) lines.push('   Refinement: ' + q.refinement);
+    if (q.so_what) lines.push('   So what: ' + q.so_what);
+    lines.push('   Scores — Priority: ' + q.priority_score + '  Novelty: ' + q.novelty_score + '  Feasibility: ' + q.feasibility_score);
+    lines.push('');
+  });
+  download('lanes_dph_question_agenda.txt', lines.join('\n'), 'text/plain');
+}
+
+function exportJSON() {
+  if (!allQ.length) return;
+  download('lanes_dph_questions.json', JSON.stringify(allQ, null, 2), 'application/json');
+}
+
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name;
+  a.click();
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function showErr(msg) { const e = document.getElementById('errBox'); e.textContent = msg; e.style.display = 'block'; }
+function hideErr() { document.getElementById('errBox').style.display = 'none'; }
+</script>
+</body>
+</html>
